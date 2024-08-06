@@ -190,3 +190,30 @@ export const getAllLikedPostsByAnUser = async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 }
+
+export const getAllPostsOfFollowedUsers = async (req, res) => {
+    try {
+        const id = req.user._id;
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(400).json({ error: "user not found" });
+        }
+
+        const followedUsers = user.following;
+        const postsOfFollowedUsers = await Post.find({ user: { $in: followedUsers } })
+            .sort({ createdAt: -1 })
+            .populate({
+                path: "user",
+                select: "-password"
+            })
+            .populate({
+                path: "comments.user",
+                select: "-password"
+            });
+
+        res.status(200).json(postsOfFollowedUsers);
+    } catch (error) {
+        console.log(`Error in  getAllPostsOfFollowedUsers: ${error.message}`);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}

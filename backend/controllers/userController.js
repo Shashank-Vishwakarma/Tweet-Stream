@@ -93,6 +93,10 @@ export const followOrUnfollowUser = async (req, res) => {
     try {
         const currentUserId = req.user._id;
         const { id: otherUserId } = req.params;
+        const user = await User.findById(otherUserId);
+        if (!user) {
+            return res.status(400).json({ error: "This user does not exists" })
+        }
 
         if (String(currentUserId) === otherUserId) {
             return res.status(400).json({ error: "You cannot follow/unfollow yourself" });
