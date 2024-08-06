@@ -14,7 +14,7 @@ export const createPost = async (req, res) => {
 
         const { text, image } = req.body;
         if (!text && !image) {
-            res.status(400).json({ error: "Post should have a text or an image" });
+            return res.status(400).json({ error: "Post should have a text or an image" });
         }
 
         if (text) {
@@ -41,7 +41,28 @@ export const getAllPosts = async (req, res) => {
 }
 
 export const deletePost = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const post = await Post.findById(id);
+        if (!post) {
+            return res.status(400).json({ error: "Post not found" });
+        }
 
+        if (String(post.user) !== String(req.user._id)) {
+            return res.status(400).json({ error: "You are not authorized to delete this post" });
+        }
+
+        if (post.image) {
+            await cloudinary.v2.uploader.destroy(post.image.split("/").pop().split(".")[0]);
+        }
+
+        await Post.findByIdAndDelete(id);
+
+        res.status(200).json({ message: "Post deleted successfully" });
+    } catch (error) {
+        console.log(`Error in deletePost: ${error.message}`);
+        res.status(500).json({ error: "Internal server error" });
+    }
 }
 
 export const likeOrUnlikePost = async (req, res) => {
