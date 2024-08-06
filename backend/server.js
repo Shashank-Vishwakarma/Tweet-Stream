@@ -1,8 +1,11 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cloudinary from 'cloudinary';
+
 import { ENV_VARIABLES } from './config/envVariables.js';
+
 import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 
 import db from './database/db.js';
 
@@ -21,6 +24,7 @@ app.use(cookieParser()); // parse req.cookies as object
 
 // routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/user', userRoutes);
 
 const PORT = ENV_VARIABLES.PORT;
 app.listen(PORT, () => {
