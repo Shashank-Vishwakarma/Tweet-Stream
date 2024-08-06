@@ -1,3 +1,4 @@
+import Notification from "../models/notificationModel.js";
 import Post from "../models/postModel.js";
 import User from "../models/userModel.js";
 import cloudinary from 'cloudinary';
@@ -36,9 +37,20 @@ export const createPost = async (req, res) => {
     }
 }
 
-export const getAllPosts = async (req, res) => {
+// export const getPostsOfFollowedUsers = async (req, res) => {
+//     try {
+//         const id = req.user._id;
+//         const followings = await User.findById(id).select("following");
 
-}
+//         let requiredPosts = [];
+//         followings.forEach(element => {
+
+//         });
+//     } catch (error) {
+//         console.log(`Error in getPostsOfFollowedUsers: ${error.message}`);
+//         res.status(500).json({ error: "Internal server error" });
+//     }
+// }
 
 export const deletePost = async (req, res) => {
     try {
@@ -79,6 +91,15 @@ export const likeOrUnlikePost = async (req, res) => {
             post.likes = post.likes.filter(like => String(like) !== String(req.user._id));
         } else { // like the post
             post.likes.push(req.user._id);
+
+            // send a notification
+            const notification = new Notification({
+                from: req.user._id,
+                to: post.user,
+                type: "like"
+            });
+
+            await notification.save();
         }
 
         await post.save();
