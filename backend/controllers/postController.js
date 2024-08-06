@@ -37,20 +37,23 @@ export const createPost = async (req, res) => {
     }
 }
 
-// export const getPostsOfFollowedUsers = async (req, res) => {
-//     try {
-//         const id = req.user._id;
-//         const followings = await User.findById(id).select("following");
+export const getAllPosts = async (req, res) => {
+    try {
+        const id = req.user._id;
+        const allPosts = await Post.find().sort({ createdAt: -1 }).populate({
+            path: "user",
+            select: "-password"
+        }).populate({
+            path: "comments.user",
+            select: "-password"
+        });
 
-//         let requiredPosts = [];
-//         followings.forEach(element => {
-
-//         });
-//     } catch (error) {
-//         console.log(`Error in getPostsOfFollowedUsers: ${error.message}`);
-//         res.status(500).json({ error: "Internal server error" });
-//     }
-// }
+        res.status(200).json({ allPosts });
+    } catch (error) {
+        console.log(`Error in getPostsOfFollowedUsers: ${error.message}`);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
 
 export const deletePost = async (req, res) => {
     try {
