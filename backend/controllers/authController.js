@@ -1,12 +1,18 @@
 import User from '../models/userModel.js'
 import { generateJwt } from '../utils/generateJwt.js'
 import { ENV_VARIABLES } from '../config/envVariables.js';
+import { validateEmail } from '../utils/validateEmail.js';
 
 export const signUpAuth = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
-        if (!username || !email || !password) {
+        const { fullName, username, email, password } = req.body;
+        if (!fullName || !username || !email || !password) {
             return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        const isEmailFormatValid = validateEmail(email);
+        if (!isEmailFormatValid) {
+            return res.status(400).json({ error: 'Invalid email format' });
         }
 
         if (password.length < 6) {
@@ -23,7 +29,7 @@ export const signUpAuth = async (req, res) => {
             return res.status(400).json({ error: 'User with this email already exists' });
         }
 
-        const newUser = new User({ username, email, password });
+        const newUser = new User({ fullName, username, email, password });
         await newUser.save();
 
         // Now, create JWT
@@ -39,6 +45,7 @@ export const signUpAuth = async (req, res) => {
             message: 'User SignUp successful!',
             user: {
                 _id: newUser._id,
+                fullName: newUser.fullName,
                 username: newUser.username,
                 email: newUser.email,
             }
@@ -85,6 +92,7 @@ export const loginAuth = async (req, res) => {
             message: 'Login successful!',
             user: {
                 _id: user._id,
+                fullName: user.fullName,
                 username: user.username,
                 email: user.email
             }

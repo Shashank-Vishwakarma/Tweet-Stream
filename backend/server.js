@@ -1,7 +1,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cloudinary from 'cloudinary';
-import { ENV_VARIABLES } from './config/envVariables';
+import { ENV_VARIABLES } from './config/envVariables.js';
 import authRoutes from './routes/authRoutes.js';
 
 import db from './database/db.js';
