@@ -66,7 +66,28 @@ export const deletePost = async (req, res) => {
 }
 
 export const likeOrUnlikePost = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const post = await Post.findById(id);
+        if (!post) {
+            return res.status(400).json({ error: "Post not found" });
+        }
 
+        const isPostAlreadyLiked = post.likes.includes(req.user._id);
+
+        if (isPostAlreadyLiked) { // unlike the post
+            post.likes = post.likes.filter(like => String(like) !== String(req.user._id));
+        } else { // like the post
+            post.likes.push(req.user._id);
+        }
+
+        await post.save();
+
+        res.status(200).json({ message: isPostAlreadyLiked ? "Unliked the post" : "Liked the post" });
+    } catch (error) {
+        console.log(`Error in likeOrUnlikePost: ${error.message}`);
+        res.status(500).json({ error: "Internal server error" });
+    }
 }
 
 export const commentOnPost = async (req, res) => {
