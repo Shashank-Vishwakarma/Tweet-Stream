@@ -15,8 +15,9 @@ cloudinary.v2.config({
 
 const app = express();
 
-app.use(express.json()); // parse req.body
-app.use(cookieParser()); // parse req.cookies
+app.use(express.json()); // parse json data --> req.body
+app.use(express.urlencoded({ extended: true })); // parse form data (urlencoded) as object --> req.body
+app.use(cookieParser()); // parse req.cookies as object
 
 // routes
 app.use('/api/v1/auth', authRoutes);
