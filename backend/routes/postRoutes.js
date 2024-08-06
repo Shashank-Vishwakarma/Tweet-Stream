@@ -8,7 +8,7 @@ postRoutes.post('/create', protectRoutewithJwt, createPost);
 postRoutes.get('/all', protectRoutewithJwt, getAllPosts);
 postRoutes.delete('/:id', protectRoutewithJwt, deletePost);
 postRoutes.post('/like/:id', protectRoutewithJwt, likeOrUnlikePost);
-postRoutes.delete('/comment/:id', protectRoutewithJwt, commentOnPost);
+postRoutes.post('/comment/:id', protectRoutewithJwt, commentOnPost);
 postRoutes.get('/comments', protectRoutewithJwt, getAllComments);
 
 export default postRoutes;
