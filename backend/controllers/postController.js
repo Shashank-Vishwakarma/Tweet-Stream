@@ -137,6 +137,21 @@ export const commentOnPost = async (req, res) => {
     }
 }
 
-export const getAllComments = async (req, res) => {
+export const getAllCommentsOnAPost = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const post = await Post.findById(id);
+        if (!post) {
+            return res.status(400).json({ error: "Post not found" });
+        }
 
+        const allCommentsOnThisPost = await Post.findById(id).select("comments").populate({
+            path: "comments.user",
+            select: "-password"
+        });
+        res.status(200).json(allCommentsOnThisPost?.comments);
+    } catch (error) {
+        console.log(`Error in getAllComments: ${error}`);
+        res.status(500).json({ error: "Internal server error" });
+    }
 }
