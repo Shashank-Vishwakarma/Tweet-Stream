@@ -58,9 +58,9 @@ export const signUpAuth = async (req, res) => {
 
 export const loginAuth = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { username, password } = req.body;
 
-        if (!email || !password) {
+        if (!username || !password) {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
@@ -68,7 +68,7 @@ export const loginAuth = async (req, res) => {
             return res.status(400).json({ error: 'Password must have at least 6 characters' });
         }
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ username });
         if (!user) {
             return res.status(401).json({ error: 'User does not exist' });
         }
