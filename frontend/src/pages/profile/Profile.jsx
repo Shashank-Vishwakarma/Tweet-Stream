@@ -83,12 +83,14 @@ const Profile = () => {
 
                                 <input
                                     type='file'
+                                    accept="image/*"
                                     hidden
                                     ref={coverImgRef}
                                     onChange={(e) => handleImgChange(e, "coverImg")}
                                 />
                                 <input
                                     type='file'
+                                    accept="image/*"
                                     hidden
                                     ref={profileImgRef}
                                     onChange={(e) => handleImgChange(e, "profileImg")}
