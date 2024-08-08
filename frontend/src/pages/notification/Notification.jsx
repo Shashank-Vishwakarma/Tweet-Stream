@@ -5,31 +5,46 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { FaUser } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa6";
 
+import { useMutation, useQuery } from '@tanstack/react-query';
+
+import { toast } from 'react-hot-toast'
+
 const Notification = () => {
-    const isLoading = false;
-    const notifications = [
-        {
-            _id: "1",
-            from: {
-                _id: "1",
-                username: "johndoe",
-                profileImg: "/avatars/boy2.png",
-            },
-            type: "follow",
-        },
-        {
-            _id: "2",
-            from: {
-                _id: "2",
-                username: "janedoe",
-                profileImg: "/avatars/girl1.png",
-            },
-            type: "like",
-        },
-    ];
+    const { isLoading, data: notifications } = useQuery({
+        queryKey: ["notifications"],
+        queryFn: async () => {
+            try {
+                const response = await fetch("http://localhost:3000/api/v1/notifications", { credentials: "include" });
+                const data = await response.json();
+                return data;
+            } catch (err) {
+                toast.error(err.message);
+                console.log(`Error in notifications query: ${err.message}`);
+            }
+        }
+    });
+
+    const { mutate: deleteAllNotifications } = useMutation({
+        mutationFn: async () => {
+            try {
+                const response = await fetch("http://localhost:3000/api/v1/notifications", {
+                    method: "DELETE",
+                    credentials: "include"
+                });
+                const data = await response.json();
+
+                toast.success(data?.message);
+
+                return data;
+            } catch (err) {
+                toast.error(err.message);
+                console.log(`Error in notifications query: ${err.message}`);
+            }
+        }
+    })
 
     const deleteNotifications = () => {
-        alert("All notifications deleted");
+        deleteAllNotifications();
     };
 
     return (
@@ -37,7 +52,7 @@ const Notification = () => {
             <div className='flex-[4_4_0] border-l border-r border-gray-700 min-h-screen'>
                 <div className='flex justify-between items-center p-4 border-b border-gray-700'>
                     <p className='font-bold'>Notifications</p>
-                    <div className='dropdown '>
+                    <div className={`dropdown ${notifications.length === 0 ? "hidden" : ""}`}>
                         <div tabIndex={0} role='button' className='m-1'>
                             <IoSettingsOutline className='w-4' />
                         </div>
