@@ -3,19 +3,13 @@ import { IoNotifications } from "react-icons/io5";
 import { FaUser } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { BiLogOut } from "react-icons/bi";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useAuthContext } from "../../context/authContext";
 
 const Sidebar = () => {
-    const data = {
-        fullName: "John Doe",
-        username: "johndoe",
-        profileImg: "/avatars/boy1.png",
-    };
-
     const navigateTo = useNavigate();
-    const { setUser } = useAuthContext();
+    const { user: data, setUser } = useAuthContext();
 
     const { mutate: logoutMutation, isError } = useMutation({
         mutationFn: async () => {

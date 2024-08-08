@@ -2,6 +2,9 @@ import { CiImageOn } from "react-icons/ci";
 import { BsEmojiSmileFill } from "react-icons/bs";
 import { useRef, useState } from "react";
 import { IoCloseSharp } from "react-icons/io5";
+import { useMutation } from "@tanstack/react-query";
+import { useAuthContext } from "../../context/authContext";
+import toast from "react-hot-toast";
 
 const CreatePost = () => {
     const [text, setText] = useState("");
@@ -9,16 +12,38 @@ const CreatePost = () => {
 
     const imgRef = useRef(null);
 
-    const isPending = false;
-    const isError = false;
+    const { user: data } = useAuthContext();
 
-    const data = {
-        profileImg: "/avatars/boy1.png",
-    };
+    const { mutate: createAPost, isPending, isError } = useMutation({
+        mutationFn: async ({ text, image }) => {
+            try {
+                const response = await fetch("http://localhost:3000/api/v1/post/create", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({ text, image })
+                });
+                const data = await response.json();
+
+                toast.success("Post created successfully");
+
+                return data;
+            } catch (err) {
+                toast.error(err.message);
+                console.log(`Error in create post mutation: ${err.message}`);
+            }
+        }
+    });
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        alert("Post created successfully");
+        createAPost({ text, img });
+        setTimeout(() => {
+            setText("");
+            setImg(null);
+        }, 100);
     };
 
     const handleImgChange = (e) => {
@@ -27,6 +52,7 @@ const CreatePost = () => {
             const reader = new FileReader();
             reader.onload = () => {
                 setImg(reader.result);
+                console.log(reader.result);
             };
             reader.readAsDataURL(file);
         }
@@ -36,7 +62,7 @@ const CreatePost = () => {
         <div className='flex p-4 items-start gap-4 border-b border-gray-700'>
             <div className='avatar'>
                 <div className='w-8 rounded-full'>
-                    <img src={data.profileImg || "/avatar-placeholder.png"} />
+                    <img src={data?.profileImg || "/avatar-placeholder.png"} />
                 </div>
             </div>
             <form className='flex flex-col gap-2 w-full' onSubmit={handleSubmit}>

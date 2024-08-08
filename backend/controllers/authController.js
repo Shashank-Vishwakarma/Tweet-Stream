@@ -32,6 +32,8 @@ export const signUpAuth = async (req, res) => {
         const newUser = new User({ fullName, username, email, password });
         await newUser.save();
 
+        newUser.password = null;
+
         // Now, create JWT
         const JWTToken = generateJwt({ id: newUser._id });
         const cookieOptions = {
@@ -43,12 +45,7 @@ export const signUpAuth = async (req, res) => {
         res.cookie('token', JWTToken, cookieOptions);
         res.status(201).json({
             message: 'User SignUp successful!',
-            user: {
-                _id: newUser._id,
-                fullName: newUser.fullName,
-                username: newUser.username,
-                email: newUser.email,
-            }
+            user: newUser
         });
     } catch (error) {
         console.log(`Error in signUpAuth: ${error.message}`);
@@ -79,6 +76,8 @@ export const loginAuth = async (req, res) => {
             return res.status(401).json({ error: 'Incorrect password' });
         }
 
+        user.password = null;
+
         // generate Token
         const JWTtoken = generateJwt({ id: user._id });
         const cookieOptions = {
@@ -90,12 +89,7 @@ export const loginAuth = async (req, res) => {
         res.cookie('token', JWTtoken, cookieOptions);
         res.status(200).json({
             message: 'Login successful!',
-            user: {
-                _id: user._id,
-                fullName: user.fullName,
-                username: user.username,
-                email: user.email
-            }
+            user: user
         });
     } catch (error) {
         console.log(`Error in loginAuth: ${error.message}`);
