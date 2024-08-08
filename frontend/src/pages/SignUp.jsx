@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { MdOutlineMail } from "react-icons/md";
 import { FaUser } from "react-icons/fa";
@@ -15,6 +15,8 @@ const SignUp = () => {
         password: "",
     });
 
+    const navigateTo = useNavigate();
+
     const { mutate, isError, error, isPending } = useMutation({
         mutationFn: async ({ fullName, username, email, password }) => {
             try {
@@ -23,6 +25,7 @@ const SignUp = () => {
                     headers: {
                         "Content-Type": "application/json"
                     },
+                    credentials: "include",
                     body: JSON.stringify({ fullName, username, email, password })
                 });
 
@@ -34,6 +37,7 @@ const SignUp = () => {
         },
         onSuccess: () => {
             toast.success("Sign Up successful");
+            navigateTo("/");
         },
         onError: (error) => {
             toast.error(`Error in signup: ${error.message}`);

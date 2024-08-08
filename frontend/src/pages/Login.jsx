@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MdOutlineMail } from "react-icons/md";
 import { MdPassword } from "react-icons/md";
 import { useMutation } from '@tanstack/react-query'
@@ -11,7 +11,9 @@ const Login = () => {
         password: "",
     });
 
-    const { mutate, isError, error } = useMutation({
+    const navigateTo = useNavigate();
+
+    const { mutate, isPending, isError, error } = useMutation({
         mutationFn: async ({ username, password }) => {
             try {
                 const response = await fetch('http://localhost:3000/api/v1/auth/login', {
@@ -19,6 +21,7 @@ const Login = () => {
                     headers: {
                         "Content-Type": "application/json"
                     },
+                    credentials: "include",
                     body: JSON.stringify({ username, password })
                 });
 
@@ -30,6 +33,7 @@ const Login = () => {
         },
         onSuccess: () => {
             toast.success("Login successful");
+            navigateTo("/");
         },
         onError: (error) => {
             toast.error(`Error in login: ${error.message}`);
@@ -73,7 +77,9 @@ const Login = () => {
                             value={formData.password}
                         />
                     </label>
-                    <button className='btn rounded-full btn-primary text-white'>Login</button>
+                    <button className='btn rounded-full btn-primary text-white'>
+                        {isPending ? "Loading..." : "Login"}
+                    </button>
                     {isError && <p className='text-red-500'>Something went wrong: {error.message}</p>}
                 </form>
                 <div className='flex flex-col gap-2 mt-4'>

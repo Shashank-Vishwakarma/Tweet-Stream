@@ -1,8 +1,10 @@
 import { MdHomeFilled } from "react-icons/md";
 import { IoNotifications } from "react-icons/io5";
 import { FaUser } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BiLogOut } from "react-icons/bi";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const Sidebar = () => {
     const data = {
@@ -10,6 +12,33 @@ const Sidebar = () => {
         username: "johndoe",
         profileImg: "/avatars/boy1.png",
     };
+
+    const navigateTo = useNavigate();
+
+    const { mutate: logoutMutation, isPending, isError } = useMutation({
+        mutationFn: async () => {
+            try {
+                const response = await fetch("http://localhost:3000/api/v1/auth/logout", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: "include"
+                });
+                const data = response.json();
+                return data;
+            } catch (err) {
+                console.log(`Error in logout : ${err.message}`);
+            }
+        },
+        onSuccess: (data) => {
+            toast.success(data.message);
+            navigateTo("/login");
+        },
+        onError: (error) => {
+            toast.error(error)
+        }
+    })
 
     return (
         <div className='md:flex-[2_2_0] w-18 max-w-52'>
@@ -59,7 +88,8 @@ const Sidebar = () => {
                                 <p className='text-white font-bold text-sm w-20 truncate'>{data?.fullName}</p>
                                 <p className='text-slate-500 text-sm'>@{data?.username}</p>
                             </div>
-                            <BiLogOut className='w-5 h-5 cursor-pointer' />
+                            {isPending ? <div className="loading loading-spinner"></div> : <BiLogOut className='w-5 h-5 cursor-pointer' onClick={logoutMutation} />}
+                            {isError && <p>Something went Wrong</p>}
                         </div>
                     </Link>
                 )}
