@@ -23,12 +23,17 @@ const Login = () => {
                 });
 
                 const data = await response.json();
-                toast.success("Login successful")
                 return data;
             } catch (err) {
-                toast.error(`Error in login: ${err.message}`);
+                console.log(`Error in login: ${err.message}`);
             }
-        }
+        },
+        onSuccess: () => {
+            toast.success("Login successful");
+        },
+        onError: (error) => {
+            toast.error(`Error in login: ${error.message}`);
+        },
     })
 
     const handleSubmit = (e) => {

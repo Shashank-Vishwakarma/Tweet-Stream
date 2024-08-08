@@ -27,12 +27,17 @@ const SignUp = () => {
                 });
 
                 const data = await response.json();
-                toast.success("Sign Up successful")
                 return data;
             } catch (err) {
-                toast.error(`Error in signup: ${err.message}`);
+                console.log(`Error in signup: ${err.message}`);
             }
-        }
+        },
+        onSuccess: () => {
+            toast.success("Sign Up successful");
+        },
+        onError: (error) => {
+            toast.error(`Error in signup: ${error.message}`);
+        },
     });
 
     const handleSubmit = (e) => {
