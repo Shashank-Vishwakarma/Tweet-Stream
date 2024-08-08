@@ -1,6 +1,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cloudinary from 'cloudinary';
+import cors from 'cors';
 
 import { ENV_VARIABLES } from './config/envVariables.js';
 
@@ -20,6 +21,11 @@ cloudinary.v2.config({
 
 const app = express();
 
+app.use(cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
 app.use(express.json()); // parse json data --> req.body
 app.use(express.urlencoded({ extended: true })); // parse form data (urlencoded) as object --> req.body
 app.use(cookieParser()); // parse req.cookies as object
