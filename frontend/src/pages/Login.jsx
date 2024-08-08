@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { MdOutlineMail } from "react-icons/md";
 import { MdPassword } from "react-icons/md";
 import { useMutation } from '@tanstack/react-query'
 import toast from "react-hot-toast";
+import { useAuthContext } from "../context/authContext";
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -13,7 +14,9 @@ const Login = () => {
 
     const navigateTo = useNavigate();
 
-    const { mutate, isPending, isError, error } = useMutation({
+    const { setUser } = useAuthContext();
+
+    const { mutate: loginMutation, isPending, isError, error } = useMutation({
         mutationFn: async ({ username, password }) => {
             try {
                 const response = await fetch('http://localhost:3000/api/v1/auth/login', {
@@ -25,24 +28,36 @@ const Login = () => {
                     body: JSON.stringify({ username, password })
                 });
 
+                if (!response.ok) {
+                    toast.error(response.statusText)
+                    throw new Error("Something went wrong in signup mutaion");
+                }
+
                 const data = await response.json();
+
+                toast.success(data?.message);
+                setUser(data?.user);
+                navigateTo('/login');
+
                 return data;
             } catch (err) {
                 console.log(`Error in login: ${err.message}`);
             }
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             toast.success("Login successful");
+            setUser(data?.user);
             navigateTo("/");
         },
         onError: (error) => {
             toast.error(`Error in login: ${error.message}`);
+            setUser(null);
         },
     })
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        mutate(formData)
+        loginMutation(formData);
     };
 
     const handleInputChange = (e) => {

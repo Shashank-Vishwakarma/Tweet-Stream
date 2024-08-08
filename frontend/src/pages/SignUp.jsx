@@ -17,7 +17,7 @@ const SignUp = () => {
 
     const navigateTo = useNavigate();
 
-    const { mutate, isError, error, isPending } = useMutation({
+    const { mutate: signUpMutation, isError, error, isPending } = useMutation({
         mutationFn: async ({ fullName, username, email, password }) => {
             try {
                 const response = await fetch('http://localhost:3000/api/v1/auth/signup', {
@@ -29,14 +29,25 @@ const SignUp = () => {
                     body: JSON.stringify({ fullName, username, email, password })
                 });
 
+                if (!response.ok) {
+                    toast.error(response.statusText)
+                    throw new Error("Something went wrong in signup mutaion");
+                }
+
                 const data = await response.json();
+
+                toast.success(data?.message);
+                setUser(data?.user);
+                navigateTo('/login');
+
                 return data;
             } catch (err) {
                 console.log(`Error in signup: ${err.message}`);
             }
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             toast.success("Sign Up successful");
+            setUser(data?.user);
             navigateTo("/");
         },
         onError: (error) => {
@@ -46,7 +57,7 @@ const SignUp = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        mutate(formData);
+        signUpMutation(formData);
     };
 
     const handleInputChange = (e) => {

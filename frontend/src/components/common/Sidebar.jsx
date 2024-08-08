@@ -3,8 +3,9 @@ import { IoNotifications } from "react-icons/io5";
 import { FaUser } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { BiLogOut } from "react-icons/bi";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { useAuthContext } from "../../context/authContext";
 
 const Sidebar = () => {
     const data = {
@@ -14,31 +15,38 @@ const Sidebar = () => {
     };
 
     const navigateTo = useNavigate();
+    const { setUser } = useAuthContext();
 
-    const { mutate: logoutMutation, isPending, isError } = useMutation({
+    const { mutate: logoutMutation, isError } = useMutation({
         mutationFn: async () => {
             try {
                 const response = await fetch("http://localhost:3000/api/v1/auth/logout", {
                     method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     credentials: "include"
                 });
-                const data = response.json();
+
+
+                if (!response.ok) {
+                    toast.error(response.statusText)
+                    throw new Error("Something went wrong in logout mutaion");
+                }
+
+                const data = await response.json();
+
+                toast.success(data?.message);
+                setUser(null);
+                navigateTo('/login');
+
                 return data;
             } catch (err) {
                 console.log(`Error in logout : ${err.message}`);
             }
-        },
-        onSuccess: (data) => {
-            toast.success(data.message);
-            navigateTo("/login");
-        },
-        onError: (error) => {
-            toast.error(error)
         }
     })
+
+    const handleLogout = () => {
+        logoutMutation();
+    }
 
     return (
         <div className='md:flex-[2_2_0] w-18 max-w-52'>
@@ -88,7 +96,9 @@ const Sidebar = () => {
                                 <p className='text-white font-bold text-sm w-20 truncate'>{data?.fullName}</p>
                                 <p className='text-slate-500 text-sm'>@{data?.username}</p>
                             </div>
-                            {isPending ? <div className="loading loading-spinner"></div> : <BiLogOut className='w-5 h-5 cursor-pointer' onClick={logoutMutation} />}
+                            <BiLogOut
+                                className='w-5 h-5 cursor-pointer'
+                                onClick={handleLogout} />
                             {isError && <p>Something went Wrong</p>}
                         </div>
                     </Link>

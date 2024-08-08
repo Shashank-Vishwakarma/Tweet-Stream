@@ -2,9 +2,16 @@ import { useState } from "react";
 
 import Posts from "../../components/common/Posts";
 import CreatePost from "./CreatePost";
+import { useAuthContext } from "../../context/authContext";
+import { Navigate } from "react-router-dom";
 
 const Home = () => {
     const [feedType, setFeedType] = useState("forYou");
+
+    const { user } = useAuthContext();
+    if (!user) {
+        return <Navigate to={'/login'} />
+    }
 
     return (
         <>
