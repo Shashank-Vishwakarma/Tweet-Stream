@@ -28,7 +28,6 @@ const SignUp = () => {
 
                 const data = await response.json();
                 toast.success("Sign Up successful")
-                console.log(data);
                 return data;
             } catch (err) {
                 toast.error(`Error in signup: ${err.message}`);
