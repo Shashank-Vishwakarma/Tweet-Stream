@@ -250,7 +250,7 @@ const Profile = () => {
                         </>
                     )}
 
-                    <Posts />
+                    <Posts feedType={feedType} username={username} />
                 </div>
             </div>
         </>

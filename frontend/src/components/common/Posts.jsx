@@ -2,14 +2,24 @@ import Post from "./Post";
 import PostSkeleton from "../skeletons/PostSkeleton";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuthContext } from "../../context/authContext";
 
-const Posts = ({ feedType }) => {
+const Posts = ({ feedType, username = "" }) => {
+    const { user } = useAuthContext();
+
     const getUrl = () => {
-        if (feedType === "following") {
-            return "http://localhost:3000/api/v1/post/following";
+        switch (feedType) {
+            case "following":
+                return "http://localhost:3000/api/v1/post/following";
+            case "posts":
+                return `http://localhost:3000/api/v1/post/user/${username}`;
+            case "likes":
+                return `http://localhost:3000/api/v1/post/likes/${user?._id}`;
+            case "forYou":
+                return "http://localhost:3000/api/v1/post/all";
+            default:
+                return "http://localhost:3000/api/v1/post/all"
         }
-
-        return "http://localhost:3000/api/v1/post/all";
     }
 
     const POST_URL = getUrl();
