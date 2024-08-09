@@ -56,7 +56,6 @@ const CreatePost = () => {
             const reader = new FileReader();
             reader.onload = () => {
                 setImg(reader.result);
-                console.log(reader.result);
             };
             reader.readAsDataURL(file);
         }

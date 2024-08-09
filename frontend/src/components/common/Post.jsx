@@ -14,7 +14,7 @@ const Post = ({ post }) => {
 
     const { user } = useAuthContext();
 
-    const isLiked = post.likes?.includes(user?._id);
+    const [isLiked, setIsLiked] = useState(post.likes?.includes(user?._id));
     const isMyPost = user?._id === post?.user?._id;
 
     const formattedDate = "1h";
@@ -67,6 +67,30 @@ const Post = ({ post }) => {
         }
     });
 
+    const { mutate: likePost } = useMutation({
+        mutationFn: async (id) => {
+            try {
+                const response = await fetch(`http://localhost:3000/api/v1/post/like/${id}`, {
+                    method: "POST",
+                    credentials: "include"
+                });
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error);
+                }
+
+                toast.success(isLiked ? "Post Unliked" : "You liked a post");
+                setIsLiked(!isLiked);
+
+                return data;
+            } catch (err) {
+                console.log(`Error in like post mutation: ${err.message}`);
+                toast.error(err.message);
+            }
+        }
+    });
+
     const handleCommentSubmit = (e) => {
         e.preventDefault();
         commentOnPost(post._id);
@@ -77,7 +101,7 @@ const Post = ({ post }) => {
     };
 
     const handleLikePost = () => {
-
+        likePost(post._id);
     };
 
     return (
@@ -179,10 +203,6 @@ const Post = ({ post }) => {
                                     <button className='outline-none'>close</button>
                                 </form>
                             </dialog>
-                            {/* <div className='flex gap-1 items-center group cursor-pointer'>
-                                <BiRepost className='w-6 h-6  text-slate-500 group-hover:text-green-500' />
-                                <span className='text-sm text-slate-500 group-hover:text-green-500'>0</span>
-                            </div> */}
                             <div className='flex gap-1 items-center group cursor-pointer' onClick={handleLikePost}>
                                 {!isLiked && (
                                     <FaRegHeart className='w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500' />
@@ -197,9 +217,6 @@ const Post = ({ post }) => {
                                 </span>
                             </div>
                         </div>
-                        {/* <div className='flex w-1/3 justify-end gap-2 items-center'>
-                            <FaRegBookmark className='w-4 h-4 text-slate-500 cursor-pointer' />
-                        </div> */}
                     </div>
                 </div>
             </div>
