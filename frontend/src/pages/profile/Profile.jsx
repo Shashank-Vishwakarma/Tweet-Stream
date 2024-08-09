@@ -14,8 +14,8 @@ import { useAuthContext } from "../../context/authContext";
 import toast from "react-hot-toast";
 
 const Profile = () => {
-    const [coverImg, setCoverImg] = useState(null);
-    const [profileImg, setProfileImg] = useState(null);
+    const [coverImage, setCoverImage] = useState(null);
+    const [profileImage, setProfileImage] = useState(null);
     const [feedType, setFeedType] = useState("posts");
 
     const coverImgRef = useRef(null);
@@ -98,12 +98,43 @@ const Profile = () => {
         if (file) {
             const reader = new FileReader();
             reader.onload = () => {
-                state === "coverImg" && setCoverImg(reader.result);
-                state === "profileImg" && setProfileImg(reader.result);
+                state === "coverImage" && setCoverImage(reader.result);
+                state === "profileImage" && setProfileImage(reader.result);
             };
             reader.readAsDataURL(file);
         }
     };
+
+    const { mutate: updateImageMutation, isPending } = useMutation({
+        mutationFn: async () => {
+            try {
+                const response = await fetch("http://localhost:3000/api/v1/user/update", {
+                    method: "PUT",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({ profileImage, coverImage })
+                });
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error);
+                }
+
+                toast.success("Image updated successfully");
+
+                return data;
+            } catch (err) {
+                console.log(`Error in update image mutation: ${err}`);
+                toast.error(err.message);
+            }
+        }
+    });
+
+    const handleImageUpdate = () => {
+        updateImageMutation();
+    }
 
     return (
         <>
@@ -126,7 +157,7 @@ const Profile = () => {
                             {/* COVER IMG */}
                             <div className='relative group/cover'>
                                 <img
-                                    src={coverImg || user?.coverImg || "/cover.png"}
+                                    src={coverImage || user?.coverImage || "/cover.png"}
                                     className='h-52 w-full object-cover'
                                     alt='cover image'
                                 />
@@ -144,19 +175,19 @@ const Profile = () => {
                                     accept="image/*"
                                     hidden
                                     ref={coverImgRef}
-                                    onChange={(e) => handleImgChange(e, "coverImg")}
+                                    onChange={(e) => handleImgChange(e, "coverImage")}
                                 />
                                 <input
                                     type='file'
                                     accept="image/*"
                                     hidden
                                     ref={profileImgRef}
-                                    onChange={(e) => handleImgChange(e, "profileImg")}
+                                    onChange={(e) => handleImgChange(e, "profileImage")}
                                 />
                                 {/* USER AVATAR */}
                                 <div className='avatar absolute -bottom-16 left-4'>
                                     <div className='w-32 rounded-full relative group/avatar'>
-                                        <img src={profileImg || user?.profileImg || "/avatar-placeholder.png"} />
+                                        <img src={profileImage || user?.profileImage || "/avatar-placeholder.png"} />
                                         <div className='absolute top-5 right-3 p-1 bg-primary rounded-full group-hover/avatar:opacity-100 opacity-0 cursor-pointer'>
                                             {isMyProfile && (
                                                 <MdEdit
@@ -178,12 +209,12 @@ const Profile = () => {
                                         {isFollow ? "Unfollow" : "Follow"}
                                     </button>
                                 )}
-                                {(coverImg || profileImg) && (
+                                {(coverImage || profileImage) && (
                                     <button
                                         className='btn btn-primary rounded-full btn-sm text-white px-4 ml-2'
-                                        onClick={() => alert("Profile updated successfully")}
+                                        onClick={handleImageUpdate}
                                     >
-                                        Update
+                                        {isPending ? "Updating" : "Update"}
                                     </button>
                                 )}
                             </div>
