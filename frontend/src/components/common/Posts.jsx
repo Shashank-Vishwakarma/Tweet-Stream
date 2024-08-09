@@ -1,49 +1,54 @@
 import Post from "./Post";
 import PostSkeleton from "../skeletons/PostSkeleton";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 const Posts = ({ feedType }) => {
-    const [posts, setPosts] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
-
-    useEffect(() => {
-        const getPosts = async () => {
-            let url = "";
-            if (feedType === "forYou") {
-                url = "http://localhost:3000/api/v1/post/all"
-            } else {
-                url = "http://localhost:3000/api/v1/post/following"
-            }
-
-            setIsLoading(true);
-            try {
-                const response = await fetch(url, { credentials: "include" });
-                const data = await response.json();
-
-                setPosts(data);
-                setIsLoading(isLoading);
-            } catch (err) {
-                toast.error(err.message);
-                console.log(`Error in Posts query: ${err.message}`);
-            } finally {
-                setIsLoading(false);
-            }
+    const getUrl = () => {
+        if (feedType === "following") {
+            return "http://localhost:3000/api/v1/post/following";
         }
 
-        getPosts();
-    }, [feedType]);
+        return "http://localhost:3000/api/v1/post/all";
+    }
+
+    const POST_URL = getUrl();
+    const { isLoading, data: posts, refetch, isRefetching } = useQuery({
+        queryKey: ["all", "posts"],
+        queryFn: async () => {
+            try {
+                const response = await fetch(POST_URL, {
+                    credentials: "include",
+                });
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error);
+                }
+
+                return data;
+            } catch (err) {
+                console.log(`Error in get comments query: ${err.message}`);
+                toast.error(err.message);
+            }
+        }
+    });
+
+    useEffect(() => {
+        refetch();
+    }, [feedType, refetch]);
 
     return (
         <>
-            {isLoading && (
+            {isLoading || isRefetching && (
                 <div className='flex flex-col justify-center'>
                     <PostSkeleton />
                     <PostSkeleton />
                     <PostSkeleton />
                 </div>
             )}
-            {!isLoading && posts?.length === 0 && <p className='text-center my-4'>No posts in this tab. Switch 👻</p>}
-            {!isLoading && posts && (
+            {!isLoading && !isRefetching && posts?.length === 0 && <p className='text-center my-4'>No posts in this tab. Switch 👻</p>}
+            {!isLoading && !isRefetching && posts && (
                 <div>
                     {posts?.map((post) => (
                         <Post key={post._id} post={post} />

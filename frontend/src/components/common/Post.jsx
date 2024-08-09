@@ -3,7 +3,7 @@ import { FaRegHeart } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useAuthContext } from '../../context/authContext'
 const Post = ({ post }) => {
@@ -19,6 +19,29 @@ const Post = ({ post }) => {
 
     const commentsRef = useRef();
 
+    const queryClient = useQueryClient();
+
+    const { data: comments } = useQuery({
+        queryKey: ["comments", post?._id],
+        queryFn: async () => {
+            try {
+                const response = await fetch(`http://localhost:3000/api/v1/post/comments/${post?._id}`, {
+                    credentials: "include",
+                });
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error);
+                }
+
+                return data;
+            } catch (err) {
+                console.log(`Error in get comments query: ${err.message}`);
+                toast.error(err.message);
+            }
+        }
+    })
+
     const { mutate: commentOnPost, isPending: isCommenting } = useMutation({
         mutationFn: async (id) => {
             try {
@@ -32,7 +55,7 @@ const Post = ({ post }) => {
                 });
                 const data = await response.json();
 
-                if (!response.ok) {
+                if (!response.ok || data.error) {
                     throw new Error(data.error);
                 }
 
@@ -42,6 +65,9 @@ const Post = ({ post }) => {
                 console.log(`Error in comment mutation: ${err.message}`);
                 toast.error(err.message);
             }
+        },
+        onSuccess: () => {
+            return queryClient.invalidateQueries({ queryKey: ["comments", post?._id] });
         }
     });
 
@@ -54,7 +80,7 @@ const Post = ({ post }) => {
                 });
                 const data = await response.json();
 
-                if (!response.ok) {
+                if (!response.ok || data.error) {
                     throw new Error(data.error);
                 }
 
@@ -64,6 +90,9 @@ const Post = ({ post }) => {
                 console.log(`Error in delete post mutation: ${err.message}`);
                 toast.error(err.message);
             }
+        },
+        onSuccess: () => {
+            return queryClient.invalidateQueries({ queryKey: ["all", "posts"] });
         }
     });
 
@@ -76,7 +105,7 @@ const Post = ({ post }) => {
                 });
                 const data = await response.json();
 
-                if (!response.ok) {
+                if (!response.ok || data.error) {
                     throw new Error(data.error);
                 }
 
@@ -88,6 +117,9 @@ const Post = ({ post }) => {
                 console.log(`Error in like post mutation: ${err.message}`);
                 toast.error(err.message);
             }
+        },
+        onSuccess: () => {
+            return
         }
     });
 
@@ -146,7 +178,7 @@ const Post = ({ post }) => {
                             >
                                 <FaRegComment className='w-4 h-4  text-slate-500 group-hover:text-sky-400' />
                                 <span className='text-sm text-slate-500 group-hover:text-sky-400'>
-                                    {post.comments.length}
+                                    {comments?.length}
                                 </span>
                             </div>
                             {/* We're using Modal Component from DaisyUI */}
@@ -154,12 +186,12 @@ const Post = ({ post }) => {
                                 <div className='modal-box rounded border border-gray-600'>
                                     <h3 className='font-bold text-lg mb-4'>COMMENTS</h3>
                                     <div className='flex flex-col gap-3 max-h-60 overflow-auto'>
-                                        {post.comments.length === 0 && (
+                                        {comments?.length === 0 && (
                                             <p className='text-sm text-slate-500'>
                                                 No comments yet 🤔 Be the first one 😉
                                             </p>
                                         )}
-                                        {post.comments?.map((comment) => (
+                                        {comments?.map((comment) => (
                                             <div key={comment._id} className='flex gap-2 items-start'>
                                                 <div className='avatar'>
                                                     <div className='w-8 rounded-full'>

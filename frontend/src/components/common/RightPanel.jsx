@@ -15,7 +15,7 @@ const RightPanel = () => {
                 });
                 const data = await response.json();
 
-                if (!response.ok) {
+                if (!response.ok || data.error) {
                     throw new Error(data.error);
                 }
 
@@ -39,7 +39,7 @@ const RightPanel = () => {
                 });
                 const data = await response.json();
 
-                if (!response.ok) {
+                if (!response.ok || data.error) {
                     throw new Error(data.error);
                 }
 
