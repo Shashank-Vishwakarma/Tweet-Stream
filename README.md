@@ -12,7 +12,7 @@ This is a web app similar to twitter.
 8. Get suggested users
 
 # Screenshots
-
+![Screenshot 2024-08-09 224103](https://github.com/user-attachments/assets/589c28e5-4eb6-4e09-a50c-dd65d5646a04)
 
 # Technology
 1. ReactJS
