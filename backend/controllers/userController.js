@@ -126,7 +126,7 @@ export const followOrUnfollowUser = async (req, res) => {
             await notification.save();
         }
 
-        res.status(200).json({ mesage: isFollowing ? "Unfollow successful" : "Follow successful" });
+        res.status(200).json({ message: isFollowing ? "Unfollow successful" : "Follow successful" });
     } catch (error) {
         console.log(`Error in followOrUnfollowUser: ${error}`);
         res.status(500).json({ error: "Internal server error" });

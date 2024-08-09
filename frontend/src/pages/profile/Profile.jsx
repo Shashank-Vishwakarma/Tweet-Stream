@@ -1,17 +1,17 @@
 import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import Posts from "../../components/common/Posts";
 import ProfileHeaderSkeleton from "../../components/skeletons/ProfileHeaderSkeleton";
 import EditProfileModal from "./EditProfileModal";
 
-import { POSTS } from "../../utils/db/dummy";
-
 import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "../../context/authContext";
+import toast from "react-hot-toast";
 
 const Profile = () => {
     const [coverImg, setCoverImg] = useState(null);
@@ -21,10 +21,77 @@ const Profile = () => {
     const coverImgRef = useRef(null);
     const profileImgRef = useRef(null);
 
-    const isLoading = false;
-    const isMyProfile = true;
+    const { username } = useParams();
+    const { isLoading, data: user } = useQuery({
+        queryKey: ["user", "profile", username],
+        queryFn: async () => {
+            try {
+                const response = await fetch(`http://localhost:3000/api/v1/user/profile/${username}`, {
+                    credentials: "include",
+                });
+                const data = await response.json();
 
-    const { user } = useAuthContext();
+                if (!response.ok) {
+                    throw new Error(data.error);
+                }
+
+                return data;
+            } catch (err) {
+                console.log(`Error in suggested users query: ${err.message}`);
+                toast.error(err.message);
+            }
+        }
+    });
+
+    const { data: posts } = useQuery({
+        queryKey: ["posts", "user", username],
+        queryFn: async () => {
+            try {
+                const response = await fetch(`http://localhost:3000/api/v1/post/user/${username}`, {
+                    credentials: "include"
+                });
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error);
+                }
+
+                return data;
+            } catch (err) {
+                console.log(`Error in get posts of an user query: ${err.message}`);
+                toast.error(err.message);
+            }
+        }
+    });
+
+    const { user: currentUser } = useAuthContext();
+    const isMyProfile = username === currentUser?.username;
+
+    let isFollow = user?.followers?.includes(currentUser?._id);
+    // const [followText, setFollowText] = useState("");
+    const { mutate: followOrUnfollowUserMutation } = useMutation({
+        mutationFn: async () => {
+            try {
+                const response = await fetch(`http://localhost:3000/api/v1/user/follow/${user?._id}`, {
+                    method: "POST",
+                    credentials: "include"
+                });
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error);
+                }
+
+                isFollow = !isFollow;
+
+                toast.success(data.message);
+                return data;
+            } catch (err) {
+                console.log(`Error in follow user mutation: ${err.message}`);
+                toast.error(err.message);
+            }
+        }
+    });
 
     const handleImgChange = (e, state) => {
         const file = e.target.files[0];
@@ -53,7 +120,7 @@ const Profile = () => {
                                 </Link>
                                 <div className='flex flex-col'>
                                     <p className='font-bold text-lg'>{user?.fullName}</p>
-                                    <span className='text-sm text-slate-500'>{POSTS?.length} posts</span>
+                                    <span className='text-sm text-slate-500'>{posts?.length} posts</span>
                                 </div>
                             </div>
                             {/* COVER IMG */}
@@ -106,9 +173,9 @@ const Profile = () => {
                                 {!isMyProfile && (
                                     <button
                                         className='btn btn-outline rounded-full btn-sm'
-                                        onClick={() => alert("Followed successfully")}
+                                        onClick={followOrUnfollowUserMutation}
                                     >
-                                        Follow
+                                        {isFollow ? "Unfollow" : "Follow"}
                                     </button>
                                 )}
                                 {(coverImg || profileImg) && (

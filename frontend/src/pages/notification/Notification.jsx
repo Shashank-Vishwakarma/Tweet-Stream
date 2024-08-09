@@ -16,6 +16,11 @@ const Notification = () => {
             try {
                 const response = await fetch("http://localhost:3000/api/v1/notifications", { credentials: "include" });
                 const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Something went wrong in getting the notifications");
+                }
+
                 return data;
             } catch (err) {
                 toast.error(err.message);
@@ -32,6 +37,10 @@ const Notification = () => {
                     credentials: "include"
                 });
                 const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Something went wrong in deleting the notifications");
+                }
 
                 toast.success(data?.message);
 
@@ -52,7 +61,7 @@ const Notification = () => {
             <div className='flex-[4_4_0] border-l border-r border-gray-700 min-h-screen'>
                 <div className='flex justify-between items-center p-4 border-b border-gray-700'>
                     <p className='font-bold'>Notifications</p>
-                    <div className={`dropdown ${notifications.length === 0 ? "hidden" : ""}`}>
+                    <div className={`dropdown ${notifications?.length === 0 ? "hidden" : ""}`}>
                         <div tabIndex={0} role='button' className='m-1'>
                             <IoSettingsOutline className='w-4' />
                         </div>
@@ -73,19 +82,19 @@ const Notification = () => {
                 )}
                 {notifications?.length === 0 && <div className='text-center p-4 font-bold'>No notifications 🤔</div>}
                 {notifications?.map((notification) => (
-                    <div className='border-b border-gray-700' key={notification._id}>
-                        <div className='flex gap-2 p-4'>
-                            {notification.type === "follow" && <FaUser className='w-7 h-7 text-primary' />}
-                            {notification.type === "like" && <FaHeart className='w-7 h-7 text-red-500' />}
-                            <Link to={`/profile/${notification.from.username}`}>
+                    <div className='border-b border-gray-700' key={notification?._id}>
+                        <div className='flex flex-row gap-2 p-4'>
+                            {notification?.type === "follow" && <FaUser className='w-7 h-7 text-primary' />}
+                            {notification?.type === "like" && <FaHeart className='w-7 h-7 text-red-500' />}
+                            <Link to={`/profile/${notification?.from.username}`} className="flex gap-2">
                                 <div className='avatar'>
                                     <div className='w-8 rounded-full'>
-                                        <img src={notification.from.profileImg || "/avatar-placeholder.png"} />
+                                        <img src={notification?.from.profileImg || "/avatar-placeholder.png"} />
                                     </div>
                                 </div>
                                 <div className='flex gap-1'>
-                                    <span className='font-bold'>@{notification.from.username}</span>{" "}
-                                    {notification.type === "follow" ? "followed you" : "liked your post"}
+                                    <span className='font-bold'>@{notification?.from.username}</span>{" "}
+                                    {notification?.type === "follow" ? "followed you" : "liked your post"}
                                 </div>
                             </Link>
                         </div>
