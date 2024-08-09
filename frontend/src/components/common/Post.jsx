@@ -7,13 +7,15 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-
+import { useAuthContext } from '../../context/authContext'
 const Post = ({ post }) => {
     const [comment, setComment] = useState("");
     const postOwner = post.user;
-    const isLiked = false;
 
-    const isMyPost = true;
+    const { user } = useAuthContext();
+
+    const isLiked = post.likes?.includes(user?._id);
+    const isMyPost = user?._id === post?.user?._id;
 
     const formattedDate = "1h";
 
@@ -43,14 +45,35 @@ const Post = ({ post }) => {
         }
     });
 
+    const { mutate: deletePost } = useMutation({
+        mutationFn: async (id) => {
+            try {
+                const response = await fetch(`http://localhost:3000/api/v1/post/${id}`, {
+                    method: "DELETE",
+                    credentials: "include"
+                });
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error);
+                }
+
+                toast.success("Post deleted successfully");
+                return data;
+            } catch (err) {
+                console.log(`Error in delete post mutation: ${err.message}`);
+                toast.error(err.message);
+            }
+        }
+    });
+
     const handleCommentSubmit = (e) => {
         e.preventDefault();
-        console.log(comment);
         commentOnPost(post._id);
     }
 
     const handleDeletePost = () => {
-
+        deletePost(post._id);
     };
 
     const handleLikePost = () => {
@@ -156,10 +179,10 @@ const Post = ({ post }) => {
                                     <button className='outline-none'>close</button>
                                 </form>
                             </dialog>
-                            <div className='flex gap-1 items-center group cursor-pointer'>
+                            {/* <div className='flex gap-1 items-center group cursor-pointer'>
                                 <BiRepost className='w-6 h-6  text-slate-500 group-hover:text-green-500' />
                                 <span className='text-sm text-slate-500 group-hover:text-green-500'>0</span>
-                            </div>
+                            </div> */}
                             <div className='flex gap-1 items-center group cursor-pointer' onClick={handleLikePost}>
                                 {!isLiked && (
                                     <FaRegHeart className='w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500' />
@@ -174,9 +197,9 @@ const Post = ({ post }) => {
                                 </span>
                             </div>
                         </div>
-                        <div className='flex w-1/3 justify-end gap-2 items-center'>
+                        {/* <div className='flex w-1/3 justify-end gap-2 items-center'>
                             <FaRegBookmark className='w-4 h-4 text-slate-500 cursor-pointer' />
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>
