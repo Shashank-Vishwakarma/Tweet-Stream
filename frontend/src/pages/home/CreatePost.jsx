@@ -33,8 +33,6 @@ const CreatePost = () => {
                     throw new Error(data.error);
                 }
 
-                toast.success("Post created successfully");
-
                 return data;
             } catch (err) {
                 toast.error(err.message);
@@ -42,17 +40,16 @@ const CreatePost = () => {
             }
         },
         onSuccess: () => {
+            setText("");
+            setImg(null);
+            toast.success("Post created successfully");
             return queryClient.invalidateQueries({ queryKey: ["all", "posts"] });
         }
     });
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        createAPost({ text, img });
-        setTimeout(() => {
-            setText("");
-            setImg(null);
-        }, 100);
+        createAPost({ text, image: img });
     };
 
     const handleImgChange = (e) => {

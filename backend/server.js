@@ -26,7 +26,9 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
-app.use(express.json()); // parse json data --> req.body
+
+// limit is set to prevent Denial of Service (DOS attack) to prevent server crash with large file
+app.use(express.json({ limit: "5mb" })); // parse json data --> req.body
 app.use(express.urlencoded({ extended: true })); // parse form data (urlencoded) as object --> req.body
 app.use(cookieParser()); // parse req.cookies as object
 
