@@ -6,6 +6,7 @@ import { MdPassword } from "react-icons/md";
 import { MdDriveFileRenameOutline } from "react-icons/md";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { useAuthContext } from "../context/authContext";
 
 const SignUp = () => {
     const [formData, setFormData] = useState({
@@ -16,6 +17,8 @@ const SignUp = () => {
     });
 
     const navigateTo = useNavigate();
+
+    const { setUser } = useAuthContext();
 
     const { mutate: signUpMutation, isError, error, isPending } = useMutation({
         mutationFn: async ({ fullName, username, email, password }) => {

@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import RightPanelSkeleton from "../skeletons/RightPanelSkeleton";
-import { useState } from "react";
 import toast from "react-hot-toast";
+import useFollowOrUnfollow from "../../hooks/useFollowOrUnfollow";
 
 const RightPanel = () => {
     const { isLoading, data: suggestedUsers } = useQuery({
@@ -26,38 +26,7 @@ const RightPanel = () => {
         }
     });
 
-    let isFollow = false;
-    const [text, setText] = useState("Follow");
-    const { mutate: followOrUnfollowUserMutation } = useMutation({
-        mutationKey: ["follow", "unfollow"],
-        mutationFn: async (id) => {
-            try {
-                const response = await fetch(`http://localhost:3000/api/v1/user/follow/${id}`, {
-                    method: "POST",
-                    credentials: "include"
-                });
-                const data = await response.json();
-
-                if (!response.ok || data.error) {
-                    throw new Error(data.error);
-                }
-
-                isFollow = !isFollow;
-
-                if (isFollow) {
-                    setText("Unfollow");
-                } else {
-                    setText("Follow");
-                }
-
-                toast.success(data.message);
-                return data;
-            } catch (err) {
-                console.log(`Error in follow suggested user mutation: ${err.message}`);
-                toast.error(err.message);
-            }
-        }
-    });
+    const { followOrUnfollowUserMutation, isPending, text } = useFollowOrUnfollow();
 
     return (
         <div className='hidden lg:block my-4 mx-2'>
@@ -95,13 +64,13 @@ const RightPanel = () => {
                                 </div>
                                 <div>
                                     <button
-                                        className='btn bg-white text-black hover:bg-white hover:opacity-90 rounded-full btn-sm'
+                                        className={`btn bg-white text-black hover:bg-white hover:opacity-90 rounded-full btn-sm ${isPending ? 'loading loading-spinner' : ''}`}
                                         onClick={(e) => {
                                             e.preventDefault()
                                             followOrUnfollowUserMutation(user._id);
                                         }}
                                     >
-                                        {text}
+                                        {text || "Follow"}
                                     </button>
                                 </div>
                             </Link>

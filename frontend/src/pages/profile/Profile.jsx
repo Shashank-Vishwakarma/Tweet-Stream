@@ -12,6 +12,7 @@ import { MdEdit } from "react-icons/md";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "../../context/authContext";
 import toast from "react-hot-toast";
+import useFollowOrUnfollow from "../../hooks/useFollowOrUnfollow";
 
 const Profile = () => {
     const [coverImage, setCoverImage] = useState(null);
@@ -68,30 +69,7 @@ const Profile = () => {
     const isMyProfile = username === currentUser?.username;
 
     let isFollow = user?.followers?.includes(currentUser?._id);
-    const { mutate: followOrUnfollowUserMutation } = useMutation({
-        mutationKey: ["follow", "unfollow"],
-        mutationFn: async () => {
-            try {
-                const response = await fetch(`http://localhost:3000/api/v1/user/follow/${user?._id}`, {
-                    method: "POST",
-                    credentials: "include"
-                });
-                const data = await response.json();
-
-                if (!response.ok || data.error) {
-                    throw new Error(data.error);
-                }
-
-                isFollow = !isFollow;
-
-                toast.success(data.message);
-                return data;
-            } catch (err) {
-                console.log(`Error in follow user mutation: ${err.message}`);
-                toast.error(err.message);
-            }
-        }
-    });
+    const { followOrUnfollowUserMutation, text } = useFollowOrUnfollow();
 
     const handleImgChange = (e, state) => {
         const file = e.target.files[0];
@@ -204,9 +182,9 @@ const Profile = () => {
                                 {!isMyProfile && (
                                     <button
                                         className='btn btn-outline rounded-full btn-sm'
-                                        onClick={followOrUnfollowUserMutation}
+                                        onClick={() => followOrUnfollowUserMutation(user?._id)}
                                     >
-                                        {isFollow ? "Unfollow" : "Follow"}
+                                        {text || isFollow ? "Unfollow" : "Follow"}
                                     </button>
                                 )}
                                 {(coverImage || profileImage) && (
