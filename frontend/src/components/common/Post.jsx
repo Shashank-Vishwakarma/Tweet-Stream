@@ -5,6 +5,8 @@ import { FaRegBookmark } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const Post = ({ post }) => {
     const [comment, setComment] = useState("");
@@ -15,15 +17,41 @@ const Post = ({ post }) => {
 
     const formattedDate = "1h";
 
-    const isCommenting = false;
+    const { mutate: commentOnPost, isPending: isCommenting } = useMutation({
+        mutationFn: async (id) => {
+            try {
+                const response = await fetch(`http://localhost:3000/api/v1/post/comment/${id}`, {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({ text: comment })
+                });
+                const data = await response.json();
 
-    const handleDeletePost = () => { };
+                toast.success("Comment Added!")
+                return data;
+            } catch (err) {
+                console.log(`Error in comment mutation: ${err.message}`);
+                toast.error(err.message);
+            }
+        }
+    });
 
-    const handlePostComment = (e) => {
+    const handleCommentSubmit = (e) => {
         e.preventDefault();
+        console.log(comment);
+        commentOnPost(post._id);
+    }
+
+    const handleDeletePost = () => {
+
     };
 
-    const handleLikePost = () => { };
+    const handleLikePost = () => {
+
+    };
 
     return (
         <>
@@ -80,7 +108,7 @@ const Post = ({ post }) => {
                                                 No comments yet 🤔 Be the first one 😉
                                             </p>
                                         )}
-                                        {post.comments.map((comment) => (
+                                        {post.comments?.map((comment) => (
                                             <div key={comment._id} className='flex gap-2 items-start'>
                                                 <div className='avatar'>
                                                     <div className='w-8 rounded-full'>
@@ -103,7 +131,7 @@ const Post = ({ post }) => {
                                     </div>
                                     <form
                                         className='flex gap-2 items-center mt-4 border-t border-gray-600 pt-2'
-                                        onSubmit={handlePostComment}
+                                        onSubmit={handleCommentSubmit}
                                     >
                                         <textarea
                                             className='textarea w-full p-1 rounded text-md resize-none border focus:outline-none  border-gray-800'
@@ -111,7 +139,7 @@ const Post = ({ post }) => {
                                             value={comment}
                                             onChange={(e) => setComment(e.target.value)}
                                         />
-                                        <button className='btn btn-primary rounded-full btn-sm text-white px-4'>
+                                        <button type="submit" className='btn btn-primary rounded-full btn-sm text-white px-4'>
                                             {isCommenting ? (
                                                 <span className='loading loading-spinner loading-md'></span>
                                             ) : (
@@ -151,4 +179,5 @@ const Post = ({ post }) => {
         </>
     );
 };
+
 export default Post;
