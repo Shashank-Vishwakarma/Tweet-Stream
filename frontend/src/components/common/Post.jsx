@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useAuthContext } from '../../context/authContext'
+import { formatPostDate } from "../../utils/date/formatDate";
 const Post = ({ post }) => {
     const [comment, setComment] = useState("");
     const postOwner = post.user;
@@ -15,7 +16,7 @@ const Post = ({ post }) => {
     const [isLiked, setIsLiked] = useState(post.likes?.includes(user?._id));
     const isMyPost = user?._id === post?.user?._id;
 
-    const formattedDate = "1h";
+    const formattedDate = formatPostDate(post?.createdAt);
 
     const commentsRef = useRef();
 

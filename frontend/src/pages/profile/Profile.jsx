@@ -13,6 +13,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "../../context/authContext";
 import toast from "react-hot-toast";
 import useFollowOrUnfollow from "../../hooks/useFollowOrUnfollow";
+import { formatMemberSinceDate } from "../../utils/date/formatDate";
 
 const Profile = () => {
     const [coverImage, setCoverImage] = useState(null);
@@ -222,7 +223,9 @@ const Profile = () => {
                                     )}
                                     <div className='flex gap-2 items-center'>
                                         <IoCalendarOutline className='w-4 h-4 text-slate-500' />
-                                        <span className='text-sm text-slate-500'>Joined July 2021</span>
+                                        <span className='text-sm text-slate-500'>
+                                            {formatMemberSinceDate(user?.createdAt)}
+                                        </span>
                                     </div>
                                 </div>
                                 <div className='flex gap-2'>
