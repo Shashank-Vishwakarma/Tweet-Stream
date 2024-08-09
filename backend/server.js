@@ -54,7 +54,7 @@ if (ENV_VARIABLES.NODE_ENV === "production") {
     })
 }
 
-const PORT = ENV_VARIABLES.PORT;
+const PORT = ENV_VARIABLES.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
