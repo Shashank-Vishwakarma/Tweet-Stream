@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import RightPanelSkeleton from "../skeletons/RightPanelSkeleton";
+import { useAuthContext } from "../../context/authContext";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 const RightPanel = () => {
     const { isLoading, data: suggestedUsers } = useQuery({
@@ -19,6 +22,39 @@ const RightPanel = () => {
                 return data;
             } catch (err) {
                 console.log(`Error in suggested users query: ${err.message}`);
+                toast.error(err.message);
+            }
+        }
+    });
+
+    let isFollow = false;
+    const [text, setText] = useState("Follow");
+    const { mutate: followOrUnfollowUserMutation } = useMutation({
+        mutationKey: ["follow", "unfollow"],
+        mutationFn: async (id) => {
+            try {
+                const response = await fetch(`http://localhost:3000/api/v1/user/follow/${id}`, {
+                    method: "POST",
+                    credentials: "include"
+                });
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error);
+                }
+
+                isFollow = !isFollow;
+
+                if (isFollow) {
+                    setText("Unfollow");
+                } else {
+                    setText("Follow");
+                }
+
+                toast.success(data.message);
+                return data;
+            } catch (err) {
+                console.log(`Error in follow suggested user mutation: ${err.message}`);
                 toast.error(err.message);
             }
         }
@@ -61,9 +97,12 @@ const RightPanel = () => {
                                 <div>
                                     <button
                                         className='btn bg-white text-black hover:bg-white hover:opacity-90 rounded-full btn-sm'
-                                        onClick={(e) => e.preventDefault()}
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            followOrUnfollowUserMutation(user._id);
+                                        }}
                                     >
-                                        Follow
+                                        {text}
                                     </button>
                                 </div>
                             </Link>

@@ -1,11 +1,9 @@
 import { FaRegComment } from "react-icons/fa";
-import { BiRepost } from "react-icons/bi";
 import { FaRegHeart } from "react-icons/fa";
-import { FaRegBookmark } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useAuthContext } from '../../context/authContext'
 const Post = ({ post }) => {
@@ -18,6 +16,8 @@ const Post = ({ post }) => {
     const isMyPost = user?._id === post?.user?._id;
 
     const formattedDate = "1h";
+
+    const commentsRef = useRef();
 
     const { mutate: commentOnPost, isPending: isCommenting } = useMutation({
         mutationFn: async (id) => {
@@ -142,7 +142,7 @@ const Post = ({ post }) => {
                         <div className='flex gap-4 items-center w-2/3 justify-between'>
                             <div
                                 className='flex gap-1 items-center cursor-pointer group'
-                                onClick={() => document.getElementById("comments_modal" + post._id).showModal()}
+                                onClick={() => commentsRef.current.showModal()}
                             >
                                 <FaRegComment className='w-4 h-4  text-slate-500 group-hover:text-sky-400' />
                                 <span className='text-sm text-slate-500 group-hover:text-sky-400'>
@@ -150,7 +150,7 @@ const Post = ({ post }) => {
                                 </span>
                             </div>
                             {/* We're using Modal Component from DaisyUI */}
-                            <dialog id={`comments_modal${post._id}`} className='modal border-none outline-none'>
+                            <dialog className='modal border-none outline-none' ref={commentsRef}>
                                 <div className='modal-box rounded border border-gray-600'>
                                     <h3 className='font-bold text-lg mb-4'>COMMENTS</h3>
                                     <div className='flex flex-col gap-3 max-h-60 overflow-auto'>

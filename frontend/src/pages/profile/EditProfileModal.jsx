@@ -1,37 +1,91 @@
-import { useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useRef, useState } from "react";
+import toast from "react-hot-toast";
 
 const EditProfileModal = () => {
+    const { data: currentUser } = useQuery({
+        queryKey: ["current", "user"],
+        queryFn: async () => {
+            try {
+                const response = await fetch("http://localhost:3000/api/v1/auth/me", {
+                    credentials: "include"
+                });
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error);
+                }
+
+                return data;
+            } catch (err) {
+                console.log(`Error in get current user query: ${err}`);
+                toast.error(err.message);
+            }
+        }
+    })
+
     const [formData, setFormData] = useState({
-        fullName: "",
-        username: "",
-        email: "",
-        bio: "",
-        link: "",
+        fullName: currentUser?.fullName,
+        username: currentUser?.username,
+        email: currentUser?.email,
+        bio: currentUser?.bio,
+        link: currentUser?.link,
         newPassword: "",
         currentPassword: "",
     });
+
+    const modelRef = useRef();
+
+    const { mutate: updateProfileMutation } = useMutation({
+        mutationFn: async () => {
+            try {
+                const response = await fetch("http://localhost:3000/api/v1/user/update", {
+                    method: "PUT",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: "include",
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error);
+                }
+
+                toast.success("Profile updated successfully");
+
+                return data;
+            } catch (err) {
+                console.log(`Error in update profile mutation: ${err}`);
+                toast.error(err.message);
+            }
+        }
+    })
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handleProfileUpdate = (e) => {
+        e.preventDefault();
+        updateProfileMutation();
+    }
+
     return (
         <>
             <button
                 className='btn btn-outline rounded-full btn-sm'
-                onClick={() => document.getElementById("edit_profile_modal").showModal()}
+                onClick={() => modelRef.current.showModal()}
             >
                 Edit profile
             </button>
-            <dialog id='edit_profile_modal' className='modal'>
+            <dialog className='modal' ref={modelRef}>
                 <div className='modal-box border rounded-md border-gray-700 shadow-md'>
                     <h3 className='font-bold text-lg my-3'>Update Profile</h3>
                     <form
                         className='flex flex-col gap-4'
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            alert("Profile updated successfully");
-                        }}
+                        onSubmit={handleProfileUpdate}
                     >
                         <div className='flex flex-wrap gap-2'>
                             <input
@@ -94,7 +148,7 @@ const EditProfileModal = () => {
                             name='link'
                             onChange={handleInputChange}
                         />
-                        <button className='btn btn-primary rounded-full btn-sm text-white'>Update</button>
+                        <button type="submit" className='btn btn-primary rounded-full btn-sm text-white'>Update</button>
                     </form>
                 </div>
                 <form method='dialog' className='modal-backdrop'>

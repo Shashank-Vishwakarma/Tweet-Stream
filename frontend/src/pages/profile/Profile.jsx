@@ -68,8 +68,8 @@ const Profile = () => {
     const isMyProfile = username === currentUser?.username;
 
     let isFollow = user?.followers?.includes(currentUser?._id);
-    // const [followText, setFollowText] = useState("");
     const { mutate: followOrUnfollowUserMutation } = useMutation({
+        mutationKey: ["follow", "unfollow"],
         mutationFn: async () => {
             try {
                 const response = await fetch(`http://localhost:3000/api/v1/user/follow/${user?._id}`, {
