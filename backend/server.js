@@ -2,6 +2,7 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cloudinary from 'cloudinary';
 import cors from 'cors';
+import path from 'path';
 
 import { ENV_VARIABLES } from './config/envVariables.js';
 
@@ -37,6 +38,21 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/post', postRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
+
+
+// <------- Set up for Deployment ------->
+const __dirname = path.resolve();
+
+// whatever the routes are coming other than those defined above, redirect to frontend
+if (ENV_VARIABLES.NODE_ENV === "production") {
+    // serve the static assets
+    app.use(express.static(path.join(__dirname, "/frontend/dist")));
+
+    // server the index.html file
+    app.get("*", (req, res) => {
+        res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+    })
+}
 
 const PORT = ENV_VARIABLES.PORT;
 app.listen(PORT, () => {
